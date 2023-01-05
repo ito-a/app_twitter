@@ -24,7 +24,7 @@ GooglePlayStoreにデプロイするには何やらKeyが必要らしい。</br>
 ```
 5.数日後に無事に新しいアカウントへの移行が済みました。
 
-### 署名Keyを消し飛ばしたときの対処法
+### 【署名Keyを消し飛ばしたときの対処法】
 ###### 経緯
 Androidには署名Keyが必要です。これは各自が生成します。</br>
 GooglePlayStoreに1回登録すると変更はできません。</br>
@@ -34,8 +34,8 @@ GooglePlayStoreに1回登録すると変更はできません。</br>
 
 ###### 対処方法
 1.Googleサポートにチャットで連絡</br>
-2.Googleから当該アプリはGooglePlayアプリ署名にご登録済みのためアップロード鍵の再登録が必要との返答</br>
-3.以下コマンドで新しい署名Keyを生成して、その鍵の証明書をPEM形式でエクスポートしてGoogleに返す
+2.Googleから当該アプリはGooglePlayアプリ署名にご登録済みのためアップロード鍵の再登録が必要との返答。</br>
+3.以下コマンドで新しい署名Keyを生成して、その鍵の証明書をPEM形式でエクスポートしてGoogleに返す。
 ```
 // 新しい署名Keyを生成
 keytool -genkeypair -alias upload -keyalg RSA -keysize 2048 -validity 9125 -keystore upload.jks -storetype JKS
