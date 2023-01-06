@@ -1,4 +1,5 @@
 ### Flutterのテストやってみた
+初学者が３日間だけFlutterテストの基本を学んでみた。
 
 #### テストの種類
 - ユニット
@@ -8,6 +9,7 @@
   - 文字通りWidgetのテスト
   - マッチャーを使って特定の文字やボタンが描画されているかをテストする
 - インテグレーション
+  - 統合テスト 
 
 #### テストファイルの命名
 テストをしたいファイル名の後ろに’_test’ を付けて命名する必要があるらしい
@@ -88,11 +90,90 @@ void main() {
 </details>
 
 <details>
-<summary>非同期編</summary>
-テストライブラリとして有名なのはmockitoだが、mocktailも登場してる<br>
-初心者にはmocktailがオススメとのこと<br>
- 
-こちら絶賛迷宮入りなのでComing Soon...
+<summary>非同期編(もうちょっと検証した方がいい)</summary>
+
+```
+@JsonSerializable(fieldRename: FieldRename.snake)
+class User {
+  User({
+    this.userId,
+    this.id,
+    this.title,
+  });
+
+  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+  String? userId;
+  int? id;
+  String? title;
+
+  Map<String, dynamic> toJson() => _$UserToJson(this);
+}
+```
+```
+@RestApi()
+abstract class ApiClient {
+  factory ApiClient(Dio dio, {required String baseUrl}) = _ApiClient;
+
+  @GET('/albums/1')
+  Future<User> getUsers();
+}
+```
+```
+abstract class TestRepository {
+  Future<User> getUsers();
+}
+
+class TestImpl with TestRepository {
+  TestImpl({
+    required this.homeClient,
+  });
+
+  ApiClient homeClient;
+
+  @override
+  Future<User> getUsers() async {
+    homeClient = ApiClient(AppDio.getInstance(), baseUrl: 'https://jsonplaceholder.typicode.com');
+    return await homeClient.getUsers();
+  }
+}
+```
+```
+// テストコード
+class MockHomeClient extends Mock implements ApiClient {}
+
+void main() {
+  late TestImpl dataSource;
+
+  final User tArticle = User.fromJson('article.json'.toFixture());
+  final User tArticles = tArticle;
+
+  late MockHomeClient homeClient;
+
+  setUp(() async {
+    registerFallbackValue(Uri());
+    homeClient = MockHomeClient();
+    dataSource = TestImpl(homeClient: homeClient);
+  });
+
+  group('get users', () {
+    test(
+      'should return Users when the response is 200 (success)',
+      () async {
+        when(
+          () => homeClient.getUsers(),
+        ).thenAnswer(
+          (_) async => tArticles,
+        );
+        final response = await dataSource.getUsers();
+        expect(response.title, 'quidem molestiae enim');
+      },
+    );
+  });
+}
+```
+解説
+- テストライブラリとして有名なのはmockito。mocktailも登場してる(初心者にはmocktailがオススメとのこと)<br>
+
 </details>
 
 ### ウィジェットテスト
@@ -156,4 +237,55 @@ testWidgets('ツールバーに「T」が表示される', (WidgetTester tester)
 - findsNWidgets: 特定の数のウィジェットが見つかった
 - findsAtLeastNWidgets:少なくとも特定の数のウィジェットを見つけた
 ```
+</details>
+
+#### インテグレーションテスト
+<details>
+<summary>超基本編</summary>
+テストの準備
+
+1. ライブラリ導入
+```
+dev_dependencies:
+  integration_test:
+    sdk: flutter
+```
+
+2. テストファイルの作成
+```
+  integration_test/
+    app_test.dart
+```
+
+3. テストコード
+```
+// FLutterのサンプルアプリをテストする
+void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  group('end-to-end test', () {
+    testWidgets('tap on the floating action button, verify counter', (tester) async {
+      app.main();
+      await tester.pumpAndSettle();
+
+      // Verify the counter starts at 0.
+      expect(find.text('0'), findsOneWidget);
+
+      // Finds the floating action button to tap on.
+      final Finder fab = find.byTooltip('Increment');
+
+      // Emulate a tap on the floating action button.
+      await tester.tap(fab);
+
+      // Trigger a frame.
+      await tester.pumpAndSettle();
+
+      // Verify the counter increments by 1.
+      expect(find.text('1'), findsOneWidget);
+    });
+  });
+}
+```
+エミュレータで実際に動かしているようなテストができる。</br>
+ただし、３つのテストの中で最も実行速度が遅い。
 </details>
