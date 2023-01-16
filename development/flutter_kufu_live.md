@@ -11,6 +11,13 @@
 <details>
 <summary>インフラ関連の話</summary>
 
+##### FlutterからAndroidを開く
+- FlutterPJからAndroidだけを開いてゴニョゴニョしたいときに役立つ豆知識</br>
+  android選択して右クリック > Flutter > Open Android Module in Android Studio</br>
+  - Flutterが選択できない時はandroid配下に「(プロジェクト名)_android.iml」を配置してあげると選択できるようになる</br>
+    参考) https://minpro.net/open-android-module-in-android-studio-is-disabled
+
+
 ##### アプリの自動デプロイは便利!
 - 色々ありましたが今は元気に動いてます。詳しい内容についてはComing Soon...
 </details>
